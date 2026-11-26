@@ -1,0 +1,17 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /chats/{chatId} {
+      allow read, update: if request.auth != null
+        && request.auth.token.phone_number in resource.data.participants;
+      allow create: if request.auth != null
+        && request.auth.token.phone_number in request.resource.data.participants;
+
+      match /messages/{messageId} {
+        allow read, create: if request.auth != null
+          && request.auth.token.phone_number in
+             get(/databases/$(database)/documents/chats/$(chatId)).data.participants;
+      }
+    }
+  }
+}
